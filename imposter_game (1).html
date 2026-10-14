@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Citizenship: The Imposter Among Us</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e24;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #00adb5; margin-bottom: 5px; }
+        .subtitle { color: #eeeeee; font-size: 1.1em; margin-bottom: 20px; text-align: center; max-width: 600px; }
+        .game-container {
+            background: #2a2a35;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #393e46;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .strikes { color: #ff2e63; }
+        .character-card {
+            background: #393e46;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #00adb5;
+        }
+        .char-title {
+            font-size: 1.4em;
+            color: #00adb5;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .hints-list {
+            text-align: left;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        .hints-list li {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-skip { background: #eeeeee; color: #222831; }
+        .btn-skip:hover { background: #cccccc; }
+        .btn-select { background: #ff2e63; color: #fff; }
+        .btn-select:hover { background: #e02251; }
+        .btn-restart { background: #00adb5; color: #fff; margin-top: 15px; }
+        .btn-restart:hover { background: #008c95; }
+        .result-screen {
+            padding: 30px;
+        }
+        .result-title { font-size: 2em; font-weight: bold; margin-bottom: 15px; }
+        .win { color: #4e9f3d; }
+        .lose { color: #ff2e63; }
+    </style>
+</head>
+<body>
+
+    <h1>The Imposter Among Citizens</h1>
+    <div class="subtitle">Analyze the behavioral data. Four are responsible Netizens practicing proper digital citizenship. One is an Imposter violating netiquette and digital accountability through subtle, deceptive actions. Find them before you run out of strikes!</div>
+
+    <div class="game-container" id="game-box">
+        <!-- Content dynamic via JS -->
+    </div>
+
+    <script>
+        const characters = [
+            {
+                name: "Citizen Alpha (Alex)",
+                isImposter: false,
+                hints: [
+                    "Fact-checks headlines using lateral reading and primary sources before hitting share.",
+                    "Always asks friends for verbal permission before posting photos of them at weekend social events.",
+                    "Uses an encrypted password manager and rotates multi-factor authentication methods quarterly.",
+                    "Engages in heated debates by critiquing the argument's structure rather than attacking the speaker."
+                ]
+            },
+            {
+                name: "Citizen Beta (Sam)",
+                isImposter: false,
+                hints: [
+                    "Maintains strict, customized screen time boundaries to preserve offline sleep and wellness cycles.",
+                    "Curates their public digital footprint specifically to highlight volunteer work and positive academic milestones.",
+                    "Utilizes open-source, royalty-free creative components and explicitly attributes the original creators.",
+                    "Blocks and reports algorithmic accounts distributing overt harassment without engaging in comment arguments."
+                ]
+            },
+            {
+                name: "The Suspect (Taylor)",
+                isImposter: true,
+                hints: [
+                    "Frequently edits publicly accessible wiki databases to remove verified criticisms of their favorite media properties.",
+                    "Utilizes AI text generators to heavily restructure research papers without citing the machine framework or primary sources.",
+                    "Maintains an alternate, unverified account to monitor group chats they were voluntarily removed from, viewing it as passive observation.",
+                    "Screenshots and archives private Direct Messages from peers, justifying it purely as 'insurance' for future personal arguments."
+                ]
+            },
+            {
+                name: "Citizen Gamma (Jordan)",
+                isImposter: false,
+                hints: [
+                    "Configures geolocation metadata to remain hidden on all public photo-sharing uploads.",
+                    "Politely sends a private text message to point out a typo in a peer's post instead of commenting publicly.",
+                    "Funnels regular monthly micro-donations to independent investigative journalism platforms.",
+                    "Regularly clears browser cookies and audits third-party app permissions connected to social accounts."
+                ]
+            },
+            {
+                name: "Citizen Delta (Morgan)",
+                isImposter: false,
+                hints: [
+                    "Sends detailed technical error reports to software developers to fix accessibility bugs in open-source platforms.",
+                    "Uses clear, explicit subject headers and professional salutations across all formal email communication.",
+                    "Advocates against online echo chambers by actively seeking verified, diverse global perspectives.",
+                    "Promptly apologizes online when corrected on a misquoted historical fact, pinning the correction immediately."
+                ]
+            }
+        ];
+
+        // Shuffle utility
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        let gameChars = [...characters];
+        shuffle(gameChars);
+
+        let currentIndex = 0;
+        let strikes = 0;
+        let eliminatedCount = 0;
+
+        function renderGame() {
+            const container = document.getElementById('game-box');
+            
+            if (strikes >= 2) {
+                renderLose();
+                return;
+            }
+
+            let char = gameChars[currentIndex];
+
+            container.innerHTML = `
+                <div class="status-bar">
+                    <div>Scanned: ${currentIndex + 1} / ${gameChars.length}</div>
+                    <div class="strikes">Strikes: ${strikes} / 2</div>
+                </div>
+                <div class="character-card">
+                    <div class="char-title">${char.name}</div>
+                    <ul class="hints-list">
+                        <li><strong>Record 1:</strong> ${char.hints[0]}</li>
+                        <li><strong>Record 2:</strong> ${char.hints[1]}</li>
+                        <li><strong>Record 3:</strong> ${char.hints[2]}</li>
+                        <li><strong>Record 4:</strong> ${char.hints[3]}</li>
+                    </ul>
+                    <div class="btn-group">
+                        <button class="btn-skip" onclick="skipChar()">Skip / Next</button>
+                        <button class="btn-select" onclick="eliminateChar()">Eliminate Character</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function skipChar() {
+            currentIndex = (currentIndex + 1) % gameChars.length;
+            renderGame();
+        }
+
+        function eliminateChar() {
+            let char = gameChars[currentIndex];
+            if (char.isImposter) {
+                renderWin();
+            } else {
+                strikes++;
+                alert(`Wrong! ${char.name} is a responsible Digital Citizen. You gained a strike.`);
+                gameChars.splice(currentIndex, 1);
+                if (gameChars.length === 1 && gameChars[0].isImposter) {
+                    // Only imposter left, but let's evaluate rules
+                    if (strikes < 2) {
+                        renderWin();
+                        return;
+                    }
+                }
+                if (currentIndex >= gameChars.length) {
+                    currentIndex = 0;
+                }
+                renderGame();
+            }
+        }
+
+        function renderWin() {
+            const container = document.getElementById('game-box');
+            container.innerHTML = `
+                <div class="result-screen">
+                    <div class="result-title win">🏆 VICTORY!</div>
+                    <p>Excellent investigation! You successfully identified the Imposter (Taylor).</p>
+                    <p><strong>The Breakdown:</strong> Taylor violated digital ethics, netiquette, and accountability by using alt-accounts to spy on chats, hoarding screenshots of private messages for leverage, modifying public data out of personal bias, and using AI content generation deceptively without attribution.</p>
+                    <button class="btn-restart" onclick="restartGame()">Play Again</button>
+                </div>
+            `;
+        }
+
+        function renderLose() {
+            const container = document.getElementById('game-box');
+            container.innerHTML = `
+                <div class="result-screen">
+                    <div class="result-title lose">❌ DEFEAT</div>
+                    <p>You eliminated 2 responsible Digital Citizens! The Imposter successfully blended into the network.</p>
+                    <button class="btn-restart" onclick="restartGame()">Try Again</button>
+                </div>
+            `;
+        }
+
+        function restartGame() {
+            currentIndex = 0;
+            strikes = 0;
+            gameChars = [...characters];
+            shuffle(gameChars);
+            renderGame();
+        }
+
+        // Initialize
+        renderGame();
+    </script>
+</body>
+</html>
